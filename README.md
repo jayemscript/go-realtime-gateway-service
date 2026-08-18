@@ -55,6 +55,8 @@ Run the Phase 0 environment check before committing:
 bash ./scripts/preflight.sh
 ```
 
+Import `test/postman/phase4-foundation.postman_collection.json` into Postman to run the manual health, readiness, method, and unknown-route checks.
+
 ## Development workflow
 
 Keep each implementation phase on its own branch and merge the phase PR into `main` before starting the next phase. Do not commit `.env` or other credentials.

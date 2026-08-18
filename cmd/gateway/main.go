@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/jayemscript/go-realtime-gateway-service/internal/api"
+	"github.com/jayemscript/go-realtime-gateway-service/internal/broker"
 	"github.com/jayemscript/go-realtime-gateway-service/internal/config"
 )
 
@@ -30,7 +31,19 @@ func run() int {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	server := api.NewServer(cfg, logger)
+	runtimeBroker, err := broker.New(cfg.BrokerDriver)
+	if err != nil {
+		logger.Error("broker initialization failed", "error", err)
+		return 1
+	}
+	defer runtimeBroker.Close()
+
+	if err := runtimeBroker.Ready(ctx); err != nil {
+		logger.Error("broker readiness check failed", "error", err)
+		return 1
+	}
+
+	server := api.NewServer(cfg, logger, runtimeBroker)
 	serverErrors := make(chan error, 1)
 	go func() {
 		serverErrors <- server.Start()
