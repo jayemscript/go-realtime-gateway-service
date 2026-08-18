@@ -78,6 +78,27 @@ else
 fi
 
 forbidden_paths=()
+tracked_secret_paths=()
+if tracked_inventory="$(git ls-files --cached 2>&1)"; then
+    while IFS= read -r tracked_path; do
+        [[ -z "$tracked_path" ]] && continue
+
+        case "$tracked_path" in
+            .env | */.env | .env.* | */.env.*)
+                if [[ "${tracked_path##*/}" != ".env.example" ]]; then
+                    tracked_secret_paths+=("$tracked_path")
+                fi
+                ;;
+        esac
+    done <<< "$tracked_inventory"
+else
+    fail_check "Tracked file inventory" "$tracked_inventory"
+fi
+
+if (( ${#tracked_secret_paths[@]} > 0 )); then
+    fail_check "Tracked secrets" "${tracked_secret_paths[*]}"
+fi
+
 if repository_inventory="$({
     git ls-files --cached
     git ls-files --others --exclude-standard
@@ -97,11 +118,6 @@ if repository_inventory="$({
         esac
 
         case "$repository_path" in
-            .env | */.env | .env.* | */.env.*)
-                if [[ "${repository_path##*/}" != ".env.example" ]]; then
-                    forbidden_paths+=("$repository_path")
-                fi
-                ;;
             coverage.out | */coverage.out | *.log | *.exe | *.dll | *.test | *.tmp | *.pem | *.key)
                 forbidden_paths+=("$repository_path")
                 ;;
