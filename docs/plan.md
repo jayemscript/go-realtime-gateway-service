@@ -30,7 +30,7 @@ The installed toolchain is:
 go version go1.26.6 windows/amd64
 ```
 
-`go.exe` is installed at `C:\Program Files\Go\bin\go.exe`, but the current Codex PowerShell process does not see it on `PATH`. Restart Codex/PowerShell after the Go installation or add `C:\Program Files\Go\bin` to `PATH`. Until then, the absolute path can be used.
+`go.exe` is installed at `C:\Program Files\Go\bin\go.exe`, but the original Codex shell did not see it on `PATH`. The Phase 0 Bash environment helper now detects this standard installation and adds it to the current shell without changing the machine-wide environment.
 
 Redis will run in Docker. Redis does not need to be installed directly on Windows.
 
@@ -201,7 +201,7 @@ Use environment variables and validate them once during startup.
 | `PING_INTERVAL` | `25s` | Optional | Heartbeat interval |
 | `PONG_TIMEOUT` | `10s` | Optional | Heartbeat timeout |
 
-Commit `.env.example` with placeholders only. Do not commit real secrets or require a `.env` parsing package; Docker Compose, PowerShell, or the deployment system supplies the environment.
+Commit `.env.example` with placeholders only. Do not commit real secrets or require a `.env` parsing package; Bash, Docker Compose, or the deployment system supplies the environment.
 
 ## 6. Target Project Structure
 
@@ -249,7 +249,7 @@ realtime-gateway-service/
 `-- LICENSE
 ```
 
-README commands must include PowerShell equivalents. The Makefile is optional convenience and must not be required on Windows.
+Bash is the primary command environment so local instructions match Linux deployment. Windows development uses Git Bash. A Makefile may wrap the same commands later, but it must not hide required setup or verification.
 
 ## 7. Implementation Phases
 
@@ -259,18 +259,22 @@ Each phase ends at a working gate. Do not start the next module while the curren
 
 Tasks:
 
-1. Make `go` available in the repository PowerShell session.
-2. Confirm Docker Desktop is running.
-3. Verify:
+1. Open Git Bash on Windows (or Bash on Linux), then source the repository environment helper to make `go` available in the current shell:
 
-   ```powershell
-   go version
-   docker version
-   docker compose version
-   git status --short
+   ```bash
+   source ./scripts/dev-env.sh
    ```
 
-4. Confirm no `.pnpm-store`, dependency caches, logs, binaries, temporary files, or secrets are inside the repository.
+2. Confirm Docker Desktop is running.
+3. Run the repeatable preflight:
+
+   ```bash
+   bash ./scripts/preflight.sh
+   ```
+
+   It verifies the Go version, Docker client and daemon, Docker Compose, repository root and status, and repository hygiene.
+
+4. Review `git status --short` and confirm every reported source/documentation file is intentional before committing.
 
 Gate:
 
@@ -296,7 +300,7 @@ Tasks:
 
 Commands:
 
-```powershell
+```bash
 go mod init <final-module-path>
 go fmt ./...
 go vet ./...
@@ -315,7 +319,7 @@ Gate:
 
 Install dependencies deliberately:
 
-```powershell
+```bash
 go get github.com/coder/websocket
 go get github.com/golang-jwt/jwt/v5
 go get github.com/redis/go-redis/v9
@@ -363,7 +367,7 @@ Automated tests:
 
 Commands:
 
-```powershell
+```bash
 go test ./...
 go test -race ./...
 go vet ./...
@@ -510,7 +514,7 @@ The gateway must publish through the broker and consume through the same subscri
 
 Commands:
 
-```powershell
+```bash
 docker compose up --build redis gateway
 docker compose --profile scale up --build
 docker compose down
@@ -596,7 +600,7 @@ Collection folders:
 
 Final verification:
 
-```powershell
+```bash
 go fmt ./...
 go vet ./...
 go test ./...
