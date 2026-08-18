@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+docs
+scripts
+*.md
+.env
+.env.*
+!.env.example
+bin
+coverage.out
+*.log
+*.tmp
