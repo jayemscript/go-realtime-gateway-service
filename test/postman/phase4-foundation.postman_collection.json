@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "Realtime Gateway - Phase 4 Foundation",
+    "description": "Manual HTTP checks for the Phase 3 health, readiness, request ID, and JSON error contract.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseHttpUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseHttpUrl}}/health",
+          "host": ["{{baseHttpUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Ready",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseHttpUrl}}/ready",
+          "host": ["{{baseHttpUrl}}"],
+          "path": ["ready"]
+        }
+      }
+    },
+    {
+      "name": "Health - Method Not Allowed",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseHttpUrl}}/health",
+          "host": ["{{baseHttpUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Unknown Route",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseHttpUrl}}/not-found",
+          "host": ["{{baseHttpUrl}}"],
+          "path": ["not-found"]
+        }
+      }
+    }
+  ]
+}
